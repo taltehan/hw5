@@ -40,8 +40,9 @@ class VisualStimData:
             ax[ind].scatter(rat_data.time.values, rat_data.isel(electrode=elec).values, s=0.05)
             ax[ind].set_xlabel('Time (seconds)')
             ax[ind].set_ylabel('Voltage')
-            ax[ind].set_title(f'electrode {elec}')
+            ax[ind].set_title(f'electrode {elec}', fontsize=9)
             ind += 1
+        plt.tight_layout()
         plt.show()
 
     def experimenter_bias(self):
