@@ -33,13 +33,15 @@ class VisualStimData:
         """
         rat_data = self.data[rat_id].sel(repetition=[rep_number])
         fig = plt.figure(1)
-        ax = fig.add_subplot(111)
-        ax.set_xlabel('Time (seconds)')
-        ax.set_ylabel('Voltage')
-        ax.set_title(f'Repetition: {rep_number}, Rat ID: {rat_id}')
+        ax = fig.subplots(len(elec_number))
+        fig.suptitle(f'Repetition: {rep_number}, Rat ID: {rat_id}')
+        ind = 0
         for elec in elec_number:
-            ax.scatter(rat_data.time.values, rat_data.isel(electrode=elec).values, label=f'elec {elec}', s=0.05)
-        ax.legend()
+            ax[ind].scatter(rat_data.time.values, rat_data.isel(electrode=elec).values, s=0.05)
+            ax[ind].set_xlabel('Time (seconds)')
+            ax[ind].set_ylabel('Voltage')
+            ax[ind].set_title(f'electrode {elec}')
+            ind += 1
         plt.show()
 
     def experimenter_bias(self):
