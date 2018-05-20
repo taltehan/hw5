@@ -58,7 +58,8 @@ class VisualStimData:
             width += 0.2
         plt.xticks(x, labels)
         ax.set_xticks(np.arange(3) + 0.5 / 2)
-        ax.legend()
+        ax.legend(title='Experimenter')
+        ax.set_title('Statistics Across Experimenters')
         plt.show()
 
 
