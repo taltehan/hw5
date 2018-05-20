@@ -17,6 +17,10 @@ class VisualStimData:
         self.data = data
         # experimenters, how many rats, some means
         # ToDo: pre/during/post
+        self.vars = self.data.data_vars
+        self.experimenter = list(set([self.data[da].attrs['experimenter_name'] for da in self.vars]))
+        self.num_rats = len(self.vars)
+        self.num_repetitions = len(self.data.repetition)
 
     def plot_electrode(self, rep_number: int, rat_id: int, elec_number: tuple=(0,)):
         """
@@ -81,4 +85,7 @@ if __name__ == '__main__':
     # print(type(stim_data))
     # filtered = stim_data.data.where(stim_data.data.time<1, drop=True)
     # print(stim_data.data.data_vars[0])
-    print(stim_data.data.data_vars.items())
+    test = stim_data.data.repetition
+    # print(stim_data.data[1])
+    # test2 = stim_data.data[0].attrs['experimenter_name']
+    print(len(test))
