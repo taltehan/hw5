@@ -1,5 +1,6 @@
 import numpy as np
 import xarray as xr
+import matplotlib.pyplot as plt
 
 
 class VisualStimData:
@@ -22,11 +23,20 @@ class VisualStimData:
         Plots the voltage of the electrodes in "elec_number" for the rat "rat_id" in the repetition
         "rep_number". Shows a single figure with subplots.
         """
-        pass
+        rat_data = self.data[rat_id].sel(repetition=[rep_number])
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_xlabel('Time (seconds)')
+        ax.set_ylabel('Voltage')
+        ax.set_title(f'Repetition: {rep_number}, Rat ID: {rat_id}')
+        for elec in elec_number:
+            ax.scatter(rat_data.time.values, rat_data.isel(electrode=elec).values, label=f'elec {elec}', s=0.05)
+        ax.legend()
+        plt.show()
 
     def experimenter_bias(self):
         """ Shows the statistics of the average recording across all experimenters """
-        pass
+
 
 
 def mock_stim_data() -> VisualStimData:
@@ -38,25 +48,37 @@ def mock_stim_data() -> VisualStimData:
     experimenter_name = ['Leonardo', 'Donatello', 'Michelangelo', 'Raphael']
     genders = ['F', 'M']
     rats_arrays = {}
+    # for each rat in the experiment, create mock attributes and a DataArray with mock data
     for rat in rat_ids:
-        attrs = {'Rat ID': rat,
-                 'Room temp': np.random.randint(20, 30),
-                 'Room humidity': np.random.randint(30, 70),
-                 'Experimenter name': np.random.choice(experimenter_name),
-                 'Rat gender': np.random.choice(genders)
+        attrs = {'rat_ID': rat,
+                 'room_temp': np.random.randint(20, 30),
+                 'room_humidity': np.random.randint(30, 70),
+                 'experimenter_name': np.random.choice(experimenter_name),
+                 'rat_gender': np.random.choice(genders)
                  }
         rats_arrays[rat] = xr.DataArray(np.random.random((len(coords['electrode']),
                                                           len(coords['time']),
                                                           len(coords['repetition']))),
                                         dims=dims, coords=coords, attrs=attrs
                                         )
-    rats_ds = VisualStimData(data=rats_arrays)
-    return rats_ds
+    rats_ds = xr.Dataset(rats_arrays)
+    return VisualStimData(data=rats_ds)
 
 
 if __name__ == '__main__':
-    # stim_data = mock_stim_data()
-    # stim_data.plot_electrode()  # add necessary vars
+    stim_data = mock_stim_data()
+    # stim_data.plot_electrode(3, 7, (0, 1))
     # stim_data.experimenter_bias()
     # ToDo: remove comments above
-    print(mock_stim_data().data)
+    # X = mock_stim_data().data[2].sel(repetition=[0])
+    # print(X.sel(electrode=[0]).values.size)
+    # print(X.time.values)
+    # print(X.coords['time'])
+    # plt.scatter(X.coords['time'].values, X.isel(electrode=0).values, s=0.05)
+    # plt.show()
+    # print(stim_data.data)
+    # filtered = stim_data.data.filter_by_attrs(experimenter_name='Donatello')
+    # print(type(stim_data))
+    # filtered = stim_data.data.where(stim_data.data.time<1, drop=True)
+    # print(stim_data.data.data_vars[0])
+    print(stim_data.data.data_vars.items())
