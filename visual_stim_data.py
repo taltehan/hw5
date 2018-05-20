@@ -18,9 +18,13 @@ class VisualStimData:
         # experimenters, how many rats, some means
         # ToDo: pre/during/post
         self.vars = self.data.data_vars
-        self.experimenter = list(set([self.data[da].attrs['experimenter_name'] for da in self.vars]))
+        self.experimenters = list(set([self.data[da].attrs['experimenter_name'] for da in self.vars]))
         self.num_rats = len(self.vars)
         self.num_repetitions = len(self.data.repetition)
+        self.pre_stimulus = self.data.where(self.data.time < 1, drop=True)
+        self.post_stimulus = self.data.where(self.data.time > 1.1, drop=True)
+        self.after_stimulus = self.data.where(self.data.time >= 1, drop=True)
+        self.during_stimulus = self.after_stimulus.where(self.after_stimulus.time <= 1.1, drop=True)
 
     def plot_electrode(self, rep_number: int, rat_id: int, elec_number: tuple=(0,)):
         """
@@ -28,7 +32,7 @@ class VisualStimData:
         "rep_number". Shows a single figure with subplots.
         """
         rat_data = self.data[rat_id].sel(repetition=[rep_number])
-        fig = plt.figure()
+        fig = plt.figure(1)
         ax = fig.add_subplot(111)
         ax.set_xlabel('Time (seconds)')
         ax.set_ylabel('Voltage')
@@ -40,7 +44,21 @@ class VisualStimData:
 
     def experimenter_bias(self):
         """ Shows the statistics of the average recording across all experimenters """
-
+        fig = plt.figure(2)
+        ax = fig.add_subplot(111)
+        x = np.arange(3)
+        labels = ('mean', 'std', 'median')
+        width = 0
+        for experimenter in self.experimenters:
+            exp_data = self.data.filter_by_attrs(experimenter_name=experimenter)
+            vals = [exp_data[da].values for da in exp_data.data_vars]
+            y = [np.mean(vals), np.std(vals), np.median(vals)]
+            ax.bar(x + width, y, 0.3, label=f'{experimenter}')
+            width+=0.2
+        plt.xticks(x, labels)
+        ax.set_xticks(np.arange(3) + 0.3 / 2)
+        ax.legend()
+        plt.show()
 
 
 def mock_stim_data() -> VisualStimData:
@@ -71,21 +89,5 @@ def mock_stim_data() -> VisualStimData:
 
 if __name__ == '__main__':
     stim_data = mock_stim_data()
-    # stim_data.plot_electrode(3, 7, (0, 1))
-    # stim_data.experimenter_bias()
-    # ToDo: remove comments above
-    # X = mock_stim_data().data[2].sel(repetition=[0])
-    # print(X.sel(electrode=[0]).values.size)
-    # print(X.time.values)
-    # print(X.coords['time'])
-    # plt.scatter(X.coords['time'].values, X.isel(electrode=0).values, s=0.05)
-    # plt.show()
-    # print(stim_data.data)
-    # filtered = stim_data.data.filter_by_attrs(experimenter_name='Donatello')
-    # print(type(stim_data))
-    # filtered = stim_data.data.where(stim_data.data.time<1, drop=True)
-    # print(stim_data.data.data_vars[0])
-    test = stim_data.data.repetition
-    # print(stim_data.data[1])
-    # test2 = stim_data.data[0].attrs['experimenter_name']
-    print(len(test))
+    stim_data.plot_electrode(3, 7, (0, 1))
+    stim_data.experimenter_bias()
